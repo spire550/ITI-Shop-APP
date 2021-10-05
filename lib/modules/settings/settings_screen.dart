@@ -1,0 +1,157 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:my_shop/layout/cubit/home_layout_cubit.dart';
+import 'package:my_shop/layout/cubit/home_layout_states.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_shop/modules/logIn/log_in.dart';
+import 'package:my_shop/shared/components/constance.dart';
+import 'package:my_shop/shared/network/local/cache_helper.dart';
+
+class Settings extends StatelessWidget {
+  var emailUpdateController = TextEditingController();
+  var nameUpdateController = TextEditingController();
+  var phoneUpdateController = TextEditingController();
+  @override
+  Widget build(BuildContext context){
+    return BlocProvider.value(
+      value: BlocProvider.of<HomeLayoutCubit>(context)..getProfile(),
+    child: BlocConsumer<HomeLayoutCubit, HomeLayoutStates>(
+      builder: (context, state) => Padding(
+        padding: const EdgeInsets.all(17.0),
+        child: state is LoadingGetProfilesData ? Center(child: CircularProgressIndicator(color: Colors.teal,),) : ListView(
+          children: [
+            if(state is LoadingUpdate)
+              Padding(
+                padding: const EdgeInsets.all(28.0),
+                child: LinearProgressIndicator(color: Colors.teal,),
+              ),
+            // Text('Update Your Information',style:
+            //   TextStyle(
+            //     fontSize: 24,
+            //     fontWeight: FontWeight.bold,
+            //     color:Colors.teal,
+            //
+            //   ),),
+              Padding(
+              padding:EdgeInsets.fromLTRB(20, 20, 20, 20) ,
+                child: Text('Update Your Information',style:
+                TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color:Colors.teal,),
+            )),
+            TextFormField(
+              controller: nameUpdateController,
+              validator: (val) {
+                if (val!.isEmpty) {
+                  return "This field must not be empty";
+                }
+              },
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.person,
+                  color: Colors.teal,
+                ),
+                labelStyle: TextStyle(color: Colors.teal),
+                labelText: "Name",
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.white)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.teal)),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.name,
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            TextFormField(
+              controller: emailUpdateController,
+              validator: (val) {
+                if (val!.isEmpty) {
+                  return "This field must not be empty";
+                }
+              },
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.email,
+                  color: Colors.teal,
+                ),
+                labelStyle: TextStyle(color: Colors.teal),
+                labelText: "Email",
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.white)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.teal)),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            TextFormField(
+              controller: phoneUpdateController,
+              validator: (val) {
+                if (val!.isEmpty) {
+                  return "This field must not be empty";
+                }
+              },
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.phone,
+                  color: Colors.teal,
+                ),
+                labelStyle: TextStyle(color: Colors.teal),
+                labelText: "Phone",
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.white)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(50),
+                    borderSide: BorderSide(color: Colors.teal)),
+                filled: true,
+                fillColor: Colors.grey[200],
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            MaterialButton(onPressed: (){
+              HomeLayoutCubit.get(context).updateData(email: emailUpdateController.text, name: nameUpdateController.text, phone: phoneUpdateController.text);
+            }, child: Text("Update",style: TextStyle(color: Colors.white,fontSize: 25),),color: Colors.teal,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              height: 50,
+            ),
+            SizedBox(
+              height: 25,
+            ),
+            MaterialButton(onPressed: (){
+              CacheHelper.removetData('token');
+              Token = '';
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>LogIn()));
+            }, child: Text("Sign Out",style: TextStyle(color: Colors.white,fontSize: 25),),color: Colors.teal,shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              height: 50,
+            ),
+          ],
+        ),
+      ),
+      listener: (context, state) {
+        if(state is SuccessGetProfileData){
+          emailUpdateController.text = HomeLayoutCubit.get(context).profileModel!.data.email;
+          nameUpdateController.text = HomeLayoutCubit.get(context).profileModel!.data.name;
+          phoneUpdateController.text = HomeLayoutCubit.get(context).profileModel!.data.phone;
+        }
+        if(state is SuccessUpdate){
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Updated Succesfully"),backgroundColor: Colors.green,duration: Duration(milliseconds: 350),));
+        }
+      },
+    ),);
+  }
+}
